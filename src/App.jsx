@@ -12,6 +12,7 @@ import { Inventory } from './pages/Inventory';
 import { Orders } from './pages/Orders';
 import { Earnings } from './pages/Earnings';
 import { Settings } from './pages/Settings';
+import { EditProduct } from './pages/EditProduct';
 
 function App() {
     return (
@@ -29,6 +30,7 @@ function App() {
                                             <Routes>
                                                 <Route path="/dashboard" element={<Dashboard />} />
                                                 <Route path="/create-product" element={<CreateProduct />} />
+                                                <Route path="/edit-product/:id" element={<EditProduct />} />
                                                 <Route path="/products" element={<Products />} />
                                                 <Route path="/inventory" element={<Inventory />} />
                                                 <Route path="/orders" element={<Orders />} />

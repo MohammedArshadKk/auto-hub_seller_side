@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ProductDetailsModal } from '../components/products/ProductDetailsModal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 const STATUS_BADGES = {
     PENDING_APPROVAL: { label: 'Pending', color: 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400' },
@@ -23,6 +24,9 @@ export const Products = () => {
     const [pagination, setPagination] = useState({ page: 1, total: 0, pages: 0 });
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const navigate = useNavigate();
     const toast = useToast();
@@ -45,15 +49,19 @@ export const Products = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this product?')) return;
-
+    const handleDelete = async () => {
+        if (!deletingId) return;
+        setIsDeleting(true);
         try {
-            await productService.deleteProduct(id);
+            await productService.deleteProduct(deletingId);
             toast.success('Product deleted successfully');
+            setIsDeleteOpen(false);
             loadProducts();
         } catch (error) {
-            toast.error('Failed to delete product');
+            toast.error(error.message || 'Failed to delete product');
+        } finally {
+            setIsDeleting(false);
+            setDeletingId(null);
         }
     };
 
@@ -126,7 +134,10 @@ export const Products = () => {
                             <ProductCard
                                 key={product._id}
                                 product={product}
-                                onDelete={handleDelete}
+                                onDelete={(id) => {
+                                    setDeletingId(id);
+                                    setIsDeleteOpen(true);
+                                }}
                                 onClick={() => {
                                     setSelectedProduct(product);
                                     setIsDetailsOpen(true);
@@ -162,6 +173,21 @@ export const Products = () => {
                             setSelectedProduct(null);
                         }}
                     />
+
+                    {/* Delete Confirmation */}
+                    <ConfirmDialog
+                        isOpen={isDeleteOpen}
+                        onClose={() => {
+                            setIsDeleteOpen(false);
+                            setDeletingId(null);
+                        }}
+                        onConfirm={handleDelete}
+                        title="Delete Product"
+                        message="Are you sure you want to delete this product? This action will archive the listing and cannot be easily undone."
+                        confirmLabel="Delete Listing"
+                        loading={isDeleting}
+                        variant="danger"
+                    />
                 </>
             ) : (
                 <EmptyState
@@ -177,6 +203,7 @@ export const Products = () => {
 };
 
 const ProductCard = ({ product, onDelete, onClick }) => {
+    const navigate = useNavigate();
     const [showMenu, setShowMenu] = useState(false);
     const status = STATUS_BADGES[product.status] || STATUS_BADGES.PENDING_APPROVAL;
 
@@ -253,7 +280,7 @@ const ProductCard = ({ product, onDelete, onClick }) => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            // TODO: Navigate to edit page
+                                            navigate(`/edit-product/${product._id}`);
                                             setShowMenu(false);
                                         }}
                                         className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border flex items-center gap-2"
