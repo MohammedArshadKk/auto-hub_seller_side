@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, MoreVertical, Edit2, Trash2, Package } from 'lucide-react';
+import { Plus, Search, MoreVertical, Edit2, Trash2, Package, AlertCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { productService } from '../services/productService';
 import { useToast } from '../context/ToastContext';
@@ -11,9 +11,14 @@ import { ProductDetailsModal } from '../components/products/ProductDetailsModal'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 const STATUS_BADGES = {
-    PENDING_APPROVAL: { label: 'Pending', color: 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400' },
+    DRAFT: { label: 'Draft', color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
+    PENDING_APPROVAL: { label: 'Pending Approval', color: 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400' },
     ACTIVE: { label: 'Active', color: 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400' },
-    REJECTED: { label: 'Rejected', color: 'bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-warning-400' },
+    REJECTED: { label: 'Rejected', color: 'bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-400' },
+    ARCHIVED: { label: 'Archived', color: 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' },
+    RESUBMIT: { label: 'Resubmit Required', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' },
+    SUSPENDED: { label: 'Suspended', color: 'bg-danger-100 dark:bg-danger-900/30 text-danger-700 dark:text-danger-400' },
+    SOLD: { label: 'Sold Out', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' },
 };
 
 export const Products = () => {
@@ -23,6 +28,7 @@ export const Products = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [pagination, setPagination] = useState({ page: 1, total: 0, pages: 0 });
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedReason, setSelectedReason] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
@@ -113,9 +119,14 @@ export const Products = () => {
                         className="input-field"
                     >
                         <option value="">All Status</option>
+                        <option value="ACTIVE">Active</option>
                         <option value="PENDING_APPROVAL">Pending Approval</option>
-                        <option value="ACTIVE">Approved / Active</option>
+                        <option value="RESUBMIT">Resubmit Required</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="SOLD">Sold Out</option>
                         <option value="REJECTED">Rejected</option>
+                        <option value="SUSPENDED">Suspended</option>
+                        <option value="ARCHIVED">Archived</option>
                     </select>
                 </div>
             </Card>
@@ -142,6 +153,7 @@ export const Products = () => {
                                     setSelectedProduct(product);
                                     setIsDetailsOpen(true);
                                 }}
+                                onViewReason={(reason) => setSelectedReason(reason)}
                             />
                         ))}
                     </div>
@@ -188,6 +200,15 @@ export const Products = () => {
                         loading={isDeleting}
                         variant="danger"
                     />
+
+                    {/* Status Reason Modal */}
+                    <ReasonModal
+                        isOpen={!!selectedReason}
+                        onClose={() => setSelectedReason(null)}
+                        title={selectedReason?.title}
+                        message={selectedReason?.message}
+                        type={selectedReason?.type}
+                    />
                 </>
             ) : (
                 <EmptyState
@@ -202,7 +223,52 @@ export const Products = () => {
     );
 };
 
-const ProductCard = ({ product, onDelete, onClick }) => {
+const ReasonModal = ({ isOpen, onClose, title, message, type }) => {
+    if (!isOpen) return null;
+
+    const isDanger = type === 'REJECTED' || type === 'SUSPENDED';
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in transition-all">
+            <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-slide-up transform transition-all ring-1 ring-black/5 dark:ring-white/10">
+                <div className="p-6 relative overflow-hidden">
+                    {/* Decorative background glow */}
+                    <div className={`absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none ${isDanger ? 'bg-danger-500' : 'bg-orange-500'}`} />
+
+                    <div className="flex items-start gap-5 relative z-10">
+                        <div className={`p-3.5 rounded-xl flex-shrink-0 shadow-sm ${isDanger
+                            ? 'bg-danger-50 dark:bg-danger-500/10 text-danger-600 dark:text-danger-400 ring-1 ring-danger-100 dark:ring-danger-500/20'
+                            : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 ring-1 ring-orange-100 dark:ring-orange-500/20'
+                            }`}>
+                            {isDanger ? <XCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+                        </div>
+                        <div className="flex-1 pt-0.5">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
+                                {title}
+                            </h3>
+                            <div className="prose prose-sm dark:prose-invert">
+                                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700/50 shadow-inner">
+                                    {message || "No specific reason provided."}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                    <Button
+                        onClick={onClose}
+                        variant="ghost"
+                        className="hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-300 transition-colors font-medium"
+                    >
+                        Close
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ProductCard = ({ product, onDelete, onClick, onViewReason }) => {
     const navigate = useNavigate();
     const [showMenu, setShowMenu] = useState(false);
     const status = STATUS_BADGES[product.status] || STATUS_BADGES.PENDING_APPROVAL;
@@ -236,22 +302,37 @@ const ProductCard = ({ product, onDelete, onClick }) => {
                             <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-1 truncate">
                                 {product.name || product.part?.partName || 'Unknown Part'}
                             </h3>
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.color}`}>
                                     {status.label}
                                 </span>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                {(product.status === 'REJECTED' || product.status === 'RESUBMIT') && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onViewReason({
+                                                title: product.status === 'REJECTED' ? 'Rejection Reason' : 'Resubmission Request',
+                                                message: product.status === 'REJECTED' ? product.rejectionReason : product.resubmitNote,
+                                                type: product.status
+                                            });
+                                        }}
+                                        className="text-xs font-medium text-primary-600 hover:text-primary-700 hover:underline flex items-center gap-1"
+                                    >
+                                        View Reason
+                                    </button>
+                                )}
+                                <span className="text-sm text-gray-500 dark:text-gray-400 border-l border-gray-300 dark:border-gray-700 pl-2">
                                     {product.part?.partName || product.partId?.category}
                                 </span>
                             </div>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    ${product.price}
+                                    ₹{product.price}
                                 </span>
                                 {product.originalPrice && (
                                     <>
                                         <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                                            ${product.originalPrice}
+                                            ₹{product.originalPrice}
                                         </span>
                                         <span className="text-sm font-medium text-danger-600 dark:text-danger-400">
                                             {discount}% OFF

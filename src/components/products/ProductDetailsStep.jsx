@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, X, Plus, Trash2, Check, Shield, ShieldOff, List, DollarSign } from 'lucide-react';
+import { Upload, X, Plus, Trash2, Check, Shield, ShieldOff, List, IndianRupee, Box, Ruler } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
@@ -220,7 +220,7 @@ export const ProductDetailsStep = ({ selectedPart, initialData, onSubmit, onBack
                         onChange={(e) => handleChange('price', e.target.value)}
                         error={errors.price}
                         placeholder="0.00"
-                        icon={DollarSign}
+                        icon={IndianRupee}
                     />
 
                     <Input
@@ -232,7 +232,7 @@ export const ProductDetailsStep = ({ selectedPart, initialData, onSubmit, onBack
                         onChange={(e) => handleChange('originalPrice', e.target.value)}
                         error={errors.originalPrice}
                         placeholder="0.00"
-                        icon={DollarSign}
+                        icon={IndianRupee}
                     />
 
                     <Input
@@ -260,6 +260,108 @@ export const ProductDetailsStep = ({ selectedPart, initialData, onSubmit, onBack
                             <option value="Used - Good">Used - Good</option>
                             <option value="Used - Fair">Used - Fair</option>
                         </select>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Shipping Information */}
+            <Card className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                    <Box className="w-5 h-5 text-primary-600" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Shipping Information
+                    </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Weight */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            Weight
+                        </label>
+                        <div className="flex rounded-md shadow-sm">
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={formData.weight?.value || ''}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    weight: { value: '', unit: 'kg', ...(prev.weight || {}), value: e.target.value }
+                                }))}
+                                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                placeholder="0.00"
+                            />
+                            <select
+                                value={formData.weight?.unit || 'kg'}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    weight: { value: '', unit: 'kg', ...(prev.weight || {}), unit: e.target.value }
+                                }))}
+                                className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 dark:border-dark-border bg-gray-50 dark:bg-dark-border text-gray-500 dark:text-gray-400 sm:text-sm rounded-r-lg focus:ring-primary-500 focus:border-primary-500"
+                            >
+                                <option value="kg">kg</option>
+                                <option value="lb">lb</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Dimensions */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            Dimensions (L × W × H)
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1 grid grid-cols-3 gap-2">
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    placeholder="L"
+                                    value={formData.dimensions?.length || ''}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        dimensions: { length: '', width: '', height: '', unit: 'cm', ...(prev.dimensions || {}), length: e.target.value }
+                                    }))}
+                                    className="block w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    placeholder="W"
+                                    value={formData.dimensions?.width || ''}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        dimensions: { length: '', width: '', height: '', unit: 'cm', ...(prev.dimensions || {}), width: e.target.value }
+                                    }))}
+                                    className="block w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    placeholder="H"
+                                    value={formData.dimensions?.height || ''}
+                                    onChange={(e) => setFormData(prev => ({
+                                        ...prev,
+                                        dimensions: { length: '', width: '', height: '', unit: 'cm', ...(prev.dimensions || {}), height: e.target.value }
+                                    }))}
+                                    className="block w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
+                            </div>
+                            <select
+                                value={formData.dimensions?.unit || 'cm'}
+                                onChange={(e) => setFormData(prev => ({
+                                    ...prev,
+                                    dimensions: { length: '', width: '', height: '', unit: 'cm', ...(prev.dimensions || {}), unit: e.target.value }
+                                }))}
+                                className="w-20 px-3 py-2 border border-gray-300 dark:border-dark-border bg-gray-50 dark:bg-dark-border text-gray-900 dark:text-white sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                            >
+                                <option value="cm">cm</option>
+                                <option value="in">in</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </Card>

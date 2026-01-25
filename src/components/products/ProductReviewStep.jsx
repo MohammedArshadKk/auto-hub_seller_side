@@ -1,4 +1,4 @@
-import { Edit2, Package, Check, Shield, Info } from 'lucide-react';
+import { Edit2, Package, Check, Shield, Info, Box } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 
@@ -33,9 +33,9 @@ export const ProductReviewStep = ({ selectedPart, productData, onSubmit, onEdit,
                     <div className="space-y-1">
                         <p className="text-sm text-gray-500">Price</p>
                         <div className="flex items-baseline gap-2">
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white">${productData.price}</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white">₹{productData.price}</p>
                             {productData.originalPrice && (
-                                <p className="text-sm text-gray-400 line-through">${productData.originalPrice}</p>
+                                <p className="text-sm text-gray-400 line-through">₹{productData.originalPrice}</p>
                             )}
                         </div>
                         {discount > 0 && (
@@ -95,6 +95,7 @@ export const ProductReviewStep = ({ selectedPart, productData, onSubmit, onEdit,
                                 <p className="text-gray-500 italic">No warranty provided</p>
                             )}
                         </div>
+
                         <div>
                             <p className="text-sm text-gray-500 mb-1">Remarks</p>
                             <p className="text-gray-700 dark:text-gray-300">
@@ -104,6 +105,47 @@ export const ProductReviewStep = ({ selectedPart, productData, onSubmit, onEdit,
                     </div>
                 </Card>
             </div>
+
+            {/* Shipping Information */}
+            <Card className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <Box className="w-5 h-5 text-primary-500" />
+                    Shipping Information
+                </h3>
+                <div className="p-4 bg-gray-50 dark:bg-dark-border border border-gray-200 dark:border-dark-border rounded-lg space-y-4">
+                    <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3">
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Weight</span>
+                        <span className="font-semibold text-gray-900 dark:text-white text-lg">
+                            {productData.weight?.value
+                                ? `${productData.weight.value} ${productData.weight.unit}`
+                                : <span className="text-gray-400 italic text-sm font-normal">Not set</span>}
+                        </span>
+                    </div>
+
+                    <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-gray-600 dark:text-gray-400 font-medium">Dimensions</span>
+                            <span className="text-xs font-semibold text-primary-600 bg-primary-100 dark:bg-primary-900/30 px-2 py-0.5 rounded">
+                                {productData.dimensions?.unit || 'cm'}
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="bg-white dark:bg-dark-bg p-3 rounded-lg border border-gray-200 dark:border-dark-border text-center shadow-sm">
+                                <span className="text-gray-500 block text-[10px] uppercase tracking-wider mb-1">Length</span>
+                                <span className="font-bold text-gray-900 dark:text-white">{productData.dimensions?.length || '-'}</span>
+                            </div>
+                            <div className="bg-white dark:bg-dark-bg p-3 rounded-lg border border-gray-200 dark:border-dark-border text-center shadow-sm">
+                                <span className="text-gray-500 block text-[10px] uppercase tracking-wider mb-1">Width</span>
+                                <span className="font-bold text-gray-900 dark:text-white">{productData.dimensions?.width || '-'}</span>
+                            </div>
+                            <div className="bg-white dark:bg-dark-bg p-3 rounded-lg border border-gray-200 dark:border-dark-border text-center shadow-sm">
+                                <span className="text-gray-500 block text-[10px] uppercase tracking-wider mb-1">Height</span>
+                                <span className="font-bold text-gray-900 dark:text-white">{productData.dimensions?.height || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Card>
 
             {/* Compatible Vehicles */}
             <Card className="p-6">

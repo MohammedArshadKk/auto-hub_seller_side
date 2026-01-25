@@ -31,6 +31,8 @@ export const CreateProduct = () => {
         keyPoints: [''],
         remarks: '',
         images: [],
+        weight: { value: '', unit: 'kg' },
+        dimensions: { length: '', width: '', height: '', unit: 'cm' },
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -86,6 +88,16 @@ export const CreateProduct = () => {
                 keyPoints: productData.keyPoints.filter(p => p.trim() !== ''),
                 remarks: productData.remarks || undefined,
                 images: uploadedImageUrls,
+                weight: productData.weight.value ? {
+                    value: parseFloat(productData.weight.value),
+                    unit: productData.weight.unit
+                } : undefined,
+                dimensions: (productData.dimensions.length && productData.dimensions.width && productData.dimensions.height) ? {
+                    length: parseFloat(productData.dimensions.length),
+                    width: parseFloat(productData.dimensions.width),
+                    height: parseFloat(productData.dimensions.height),
+                    unit: productData.dimensions.unit
+                } : undefined,
             };
 
             await productService.createProduct(payload);

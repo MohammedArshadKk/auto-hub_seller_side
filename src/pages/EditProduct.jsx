@@ -48,6 +48,8 @@ export const EditProduct = () => {
                 images: p.images || [],
                 isCustomBrand: p.isCustomBrand || false,
                 isCustomPartNumber: p.isCustomPartNumber || false,
+                weight: p.weight || { value: '', unit: 'kg' },
+                dimensions: p.dimensions || { length: '', width: '', height: '', unit: 'cm' },
             });
 
             setSelectedPart(p.part);
@@ -105,6 +107,16 @@ export const EditProduct = () => {
                 keyPoints: productData.keyPoints.filter(p => p.trim() !== ''),
                 remarks: productData.remarks || null,
                 images: finalImages,
+                weight: productData.weight.value ? {
+                    value: parseFloat(productData.weight.value),
+                    unit: productData.weight.unit
+                } : undefined,
+                dimensions: (productData.dimensions.length && productData.dimensions.width && productData.dimensions.height) ? {
+                    length: parseFloat(productData.dimensions.length),
+                    width: parseFloat(productData.dimensions.width),
+                    height: parseFloat(productData.dimensions.height),
+                    unit: productData.dimensions.unit
+                } : undefined,
             };
 
             await productService.updateProduct(id, payload);
