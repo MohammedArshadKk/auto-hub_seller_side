@@ -138,6 +138,32 @@ export const Orders = () => {
                                     </Button>
                                 </div>
                             </div>
+
+                            {/* Products Preview */}
+                            <div className="px-5 pb-5 pt-0 border-t border-gray-50 dark:border-dark-border/50">
+                                <div className="flex flex-wrap gap-3 mt-4">
+                                    {order.items.slice(0, 4).map((item, index) => (
+                                        <div key={index} className="flex items-center gap-2 bg-gray-50/50 dark:bg-dark-bg/50 px-2 py-1.5 rounded-lg border border-gray-100 dark:border-dark-border max-w-[200px]">
+                                            <div className="w-8 h-8 rounded bg-white dark:bg-dark-card border border-gray-100 dark:border-dark-border overflow-hidden flex-shrink-0">
+                                                <img
+                                                    src={item.product?.images?.[0] || item.images?.[0] || '/placeholder-product.png'}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-medium text-gray-900 dark:text-white truncate leading-tight">{item.name}</p>
+                                                <p className="text-[9px] text-gray-500">Qty: {item.quantity} • ₹{item.price}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {order.items.length > 4 && (
+                                        <div className="flex items-center justify-center px-3 py-1.5 bg-gray-50 dark:bg-dark-bg rounded-lg border border-dashed border-gray-200 dark:border-dark-border text-[9px] font-medium text-gray-500">
+                                            +{order.items.length - 4} more
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </Card>
                     ))}
 
