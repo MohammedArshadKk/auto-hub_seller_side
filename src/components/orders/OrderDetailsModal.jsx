@@ -17,7 +17,9 @@ export const OrderDetailsModal = ({ order, isOpen, onClose, onUpdateStatus }) =>
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
             <div className="bg-white dark:bg-dark-elem w-full max-w-4xl h-[90vh] rounded-2xl shadow-xl border border-gray-100 dark:border-dark-border overflow-hidden flex flex-col animate-slide-up">
-                {/* Header */}
+                {
+                    /* Header */
+                }
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-dark-border flex justify-between items-center bg-white dark:bg-dark-elem sticky top-0 z-10">
                     <div>
                         <div className="flex items-center gap-3">

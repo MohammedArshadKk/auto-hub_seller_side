@@ -10,6 +10,7 @@ import { CreateProduct } from './pages/CreateProduct';
 import { Products } from './pages/Products';
 import { Inventory } from './pages/Inventory';
 import { Orders } from './pages/Orders';
+import { OrderDetailPage } from './pages/OrderDetailPage';
 import { Earnings } from './pages/Earnings';
 import { Settings } from './pages/Settings';
 import { EditProduct } from './pages/EditProduct';
@@ -34,6 +35,7 @@ function App() {
                                                 <Route path="/products" element={<Products />} />
                                                 <Route path="/inventory" element={<Inventory />} />
                                                 <Route path="/orders" element={<Orders />} />
+                                                <Route path="/orders/:id" element={<OrderDetailPage />} />
                                                 <Route path="/earnings" element={<Earnings />} />
                                                 <Route path="/settings" element={<Settings />} />
                                                 <Route path="/" element={<Navigate to="/dashboard" replace />} />

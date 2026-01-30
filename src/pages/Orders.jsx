@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Package, ChevronRight, Eye } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -6,7 +7,6 @@ import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { useToast } from '../context/ToastContext';
 import { orderService } from '../services/orderService';
-import { OrderDetailsModal } from '../components/orders/OrderDetailsModal';
 
 const STATUS_TABS = [
     { id: 'ALL', label: 'All Orders' },
@@ -18,12 +18,11 @@ const STATUS_TABS = [
 ];
 
 export const Orders = () => {
+    const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [pagination, setPagination] = useState({ page: 1, total: 0, pages: 0 });
-    const [selectedOrder, setSelectedOrder] = useState(null);
-    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     const toast = useToast();
 
@@ -36,7 +35,7 @@ export const Orders = () => {
         try {
             const res = await orderService.getOrders(pagination.page, 20, statusFilter);
             setOrders(res.data?.orders || []);
-            setPagination(res.pagination || { page: 1, total: 0, pages: 0 });
+            setPagination(res.data?.pagination || { page: 1, total: 0, pages: 0 });
         } catch (error) {
             toast.error('Failed to load orders');
             console.error(error);
@@ -45,35 +44,22 @@ export const Orders = () => {
         }
     };
 
-    const handleStatusUpdate = async (id, newStatus) => {
-        try {
-            await orderService.updateOrderStatus(id, newStatus);
-            toast.success(`Order marked as ${newStatus.toLowerCase()}`);
-            setIsDetailsOpen(false); // Optionally close modal, or refresh details
-            loadOrders(); // Refresh list
-        } catch (error) {
-            toast.error('Failed to update status');
-        }
-    };
-
-    const viewDetails = (order) => {
-        setSelectedOrder(order);
-        setIsDetailsOpen(true);
-    };
-
     const getStatusColor = (status) => {
         switch (status) {
-            case 'PENDING': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-            case 'PROCESSING': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-            case 'SHIPPED': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-            case 'DELIVERED': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-            case 'CANCELLED': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+            case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+            case 'processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+            case 'shipped': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+            case 'delivered': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+            case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+            case 'payment_failed': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+            case 'payment_pending': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+            case 'confirmed': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
             default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
         }
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in">
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Orders</h1>
@@ -90,8 +76,8 @@ export const Orders = () => {
                             setPagination(prev => ({ ...prev, page: 1 }));
                         }}
                         className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors relative ${statusFilter === tab.id
-                                ? 'text-primary-600 dark:text-primary-400'
-                                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                            ? 'text-primary-600 dark:text-primary-400'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                             }`}
                     >
                         {tab.label}
@@ -122,12 +108,12 @@ export const Orders = () => {
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className="font-bold text-gray-900 dark:text-white">#{order.orderNumber}</span>
-                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${getStatusColor(order.status)}`}>
-                                                {order.status}
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${getStatusColor(order.orderStatus)}`}>
+                                                {order.orderStatus.replace(/_/g, ' ')}
                                             </span>
                                         </div>
                                         <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                                            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                                            <span>{new Date(order.orderedAt).toLocaleDateString()}</span>
                                             <span className="hidden sm:inline text-gray-300">•</span>
                                             <span>{order.items.length} items</span>
                                             <span className="hidden sm:inline text-gray-300">•</span>
@@ -139,11 +125,11 @@ export const Orders = () => {
                                 {/* Customer Info & Action */}
                                 <div className="flex items-center justify-between md:justify-end gap-6 flex-1 min-w-0">
                                     <div className="hidden md:block text-right">
-                                        <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{order.customer.name}</p>
-                                        <p className="text-sm text-gray-500 truncate max-w-[150px]">{order.shippingAddress.city}</p>
+                                        <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{order.buyer?.name || 'Guest'}</p>
+                                        <p className="text-sm text-gray-500 truncate max-w-[150px]">{order.shippingAddress?.city}</p>
                                     </div>
                                     <Button
-                                        onClick={() => viewDetails(order)}
+                                        onClick={() => navigate(`/orders/${order._id}`)}
                                         variant="ghost"
                                         className="gap-2 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 group-hover:text-primary-600 dark:group-hover:text-primary-400"
                                     >
@@ -180,14 +166,6 @@ export const Orders = () => {
                     message="When you receive orders, they will appear here."
                 />
             )}
-
-            {/* Order Details Modal */}
-            <OrderDetailsModal
-                isOpen={isDetailsOpen}
-                onClose={() => setIsDetailsOpen(false)}
-                order={selectedOrder}
-                onUpdateStatus={handleStatusUpdate}
-            />
         </div>
     );
 };
